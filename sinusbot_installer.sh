@@ -621,15 +621,9 @@ fi
 magentaMessage "Installing necessary packages. Please wait..."
 
 if [[ -f /etc/centos-release ]]; then
-  yum -y -q install screen xvfb libxcursor1 ca-certificates bzip2 psmisc libglib2.0-0 less ntp python3 iproute which dbus libnss3 libegl1-mesa x11-xkb-utils libasound2 libxcomposite-dev libxi6 libpci3 libxslt1.1 libxkbcommon0 libxss1 >/dev/null
+  yum -y -q install screen xvfb libxcursor1 ca-certificates bzip2 psmisc libglib2.0-0 less python3 iproute which dbus libnss3 libegl1-mesa x11-xkb-utils libasound2 libxcomposite-dev libxi6 libpci3 libxslt1.1 libxkbcommon0 libxss1 >/dev/null
   update-ca-trust extract >/dev/null
 else
-  # Detect if systemctl is available then use systemd as start script. Otherwise use init.d
-  if [ "$OSRELEASE" == "18.04" ] && [ "$OS" == "ubuntu" ]; then
-    apt-get -y install chrony
-  else
-    apt-get -y install ntp
-  fi
   apt-get install -y -qq --no-install-recommends libfontconfig libxtst6 screen xvfb libxcursor1 ca-certificates bzip2 psmisc libglib2.0-0 less python3 iproute2 dbus libnss3 libegl1-mesa x11-xkb-utils libasound2 libxcomposite-dev libxi6 libpci3 libxslt1.1 libxkbcommon0 libxss1
   update-ca-certificates >/dev/null
 fi
@@ -649,47 +643,6 @@ fi
 fi
 
 greenMessage "Packages installed"!
-
-# Setting server time
-
-if [[ $VIRTUALIZATION_TYPE == "openvz" ]]; then
-  redMessage "You're using OpenVZ virtualization. You can't set your time, maybe it works but there is no guarantee. Skipping this part..."
-else
-  if [[ -f /etc/centos-release ]] || [ $(cat /etc/*release | grep "DISTRIB_ID=" | sed 's/DISTRIB_ID=//g') ]; then
-    if [ "$OSRELEASE" == "18.04" ] && [ "$OS" == "ubuntu" ]; then
-      systemctl start chronyd
-      if [[ $(chronyc -a 'burst 4/4') == "200 OK" ]]; then
-        TIME=$(date)
-      else
-        errorExit "Error while setting time via chrony"!
-      fi
-    else
-      if [[ -f /etc/centos-release ]]; then
-       service ntpd stop
-      else
-       service ntp stop
-      fi
-      ntpd -s 0.pool.ntp.org
-      if [[ -f /etc/centos-release ]]; then
-       service ntpd start
-      else
-       service ntp start
-      fi
-      TIME=$(date)
-    fi
-    greenMessage "Automatically set time to" $TIME!
-  else
-    if [[ $(command -v timedatectl) != "" ]]; then
-      service ntp restart
-      timedatectl set-ntp yes
-      timedatectl
-      TIME=$(date)
-      greenMessage "Automatically set time to" $TIME!
-    else
-      redMessage "Unable to configure your date automatically, the installation will still be attempted."
-    fi
-  fi
-fi
 
 USERADD=$(which useradd)
 GROUPADD=$(which groupadd)
