@@ -83,21 +83,6 @@ func TestDiscord(t *testing.T) {
 	if err := spawnInstance(*uuid, *token); err != nil {
 		t.Fatalf("could not spawn discord instance: %v", err)
 	}
-	/* Workaround for SinusBot bug */
-	if err := updateInstance(*uuid, *token, true, "152947849393471488/452453323891671041"); err != nil {
-		t.Fatalf("could not change instance settings: %v", err)
-	}
-
-	if err := killInstance(*uuid, *token); err != nil {
-		t.Fatalf("could not kill discord instance: %v", err)
-	}
-
-	if err := spawnInstance(*uuid, *token); err != nil {
-		t.Fatalf("could not spawn discord instance: %v", err)
-	}
-
-	time.Sleep(5 * time.Second)
-	/* End workaround */
 
 	var to string
 	to = "454634325556854796"
